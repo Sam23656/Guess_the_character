@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body class="bg-dark text-white">
+    <div class="cover-container p-3 mx-auto flex-column">
+        <nav  class="navbar navbar-expand navbar-dark bg-dark" aria-label="Second navbar example">
+            <div class="container-fluid ">
+              <a class="navbar-brand mb-3" href="{% url "index" %}">Guess_the_character</a>
+              <div class="collapse navbar-collapse" id="navbarsExample02">
+                <ul class=" d-flex navbar-nav me-auto">
+                 <li class="nav-item">
+                    <a class="nav-link active mb-3" aria-current="page" href="">Главная</a>
+                  </li>
+                </ul>
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                   <p class="navbar-text">Пользователь {{request.user}}</p>
+                </li>
+               <li class="nav-item">
+                   <p class="ms-2"><a class="btn btn-primary" href="">Выйти</a></p>
+               </li>
+               {% else %}
+               <li class="nav-item">
+                   <p class="ms-2"><a class="btn btn-primary" href="{% url 'login' %}">Войти</a></p>
+               </li>
+               <li class="nav-item">
+               <p class="ms-2"><a class="btn btn-primary" href="">Зарегистрироваться</a></p>
+               </li>
+               {% endif %}
+            </ul>
+              </div>
+            </div>
+          </nav>
+        <div class="d-flex flex-column flex-wrap">
+            <div class="d-flex flex-row flex-wrap bg-dark justify-content-center align-content-center text-white mb-3">
+                {% block content %}
+
+                {% endblock content %}
+            </div>
+        </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends 'Character/base.html' %}
+
+{% block title %} Login {% endblock %}
+{% block content %}
+    <div style="margin-top: 140px;" class="border d-flex flex-column  align-items-center border-primary rounded-3">
+        <form action="" class="d-flex flex-column justify-content-center align-content-center " method="post">
+        {% csrf_token %}
+        <div class="ms-3 me-3 " >{{ form.as_p }}</div>
+        <input class="btn btn-primary align-self-center mb-1" style="width: 100px; height: 50px;" type="submit" value="Войти">
+        </form>
+    </div>
+{% endblock content %}
