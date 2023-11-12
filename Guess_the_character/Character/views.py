@@ -1,8 +1,12 @@
-from django.contrib.auth.views import LoginView
-from django.shortcuts import render
+import random
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.views.generic import CreateView, DetailView, UpdateView
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-
-from Character.forms import CustomAuthenticationForm
+from django.contrib.auth import logout, login
+from Character.forms import CustomAuthenticationForm, RegisterForm, PasswordChangeForm, ChangeProfileForm, \
+    CreateQuestionForm
+from Character.models import User, Question, Like
 
 
 # Create your views here.
@@ -15,3 +19,116 @@ class LoginViewPage(LoginView):
     template_name = 'Character/login.html'
     form_class = CustomAuthenticationForm
     next_page = reverse_lazy('index')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = self.request.user
+        if 'test_results' in self.request.session:
+            test_results = self.request.session['test_results']
+            user.Passed_Tests += test_results.get('passed_tests', 0)
+            user.Correct_Answers += test_results.get('correct_answers', 0)
+            user.Wrong_Answers += test_results.get('wrong_answers', 0)
+            del self.request.session['test_results']
+            self.request.session.save()
+        user.save()
+
+        return response
+
+
+class RegisterView(CreateView):
+    model = User
+    template_name = 'Character/register.html'
+    form_class = RegisterForm
+    success_url = reverse_lazy('index')
+
+
+class AccountView(DetailView):
+    model = User
+    template_name = 'Character/account.html'
+    context_object_name = 'user'
+    pk_url_kwarg = 'pk'
+
+
+def log_out(request):
+    logout(request)
+    return redirect('index')
+
+
+class ChangePasswordView(PasswordChangeView):
+    template_name = 'Character/change_password.html'
+    form_class = PasswordChangeForm
+    success_url = reverse_lazy('index')
+
+
+class ChangeProfileView(UpdateView):
+    model = User
+    template_name = 'Character/change_profile.html'
+    form_class = ChangeProfileForm
+    success_url = reverse_lazy('index')
+    pk_url_kwarg = 'pk'
+
+
+class CreateQuestionView(CreateView):
+    model = Question
+    template_name = 'Character/create_question.html'
+    form_class = CreateQuestionForm
+    success_url = reverse_lazy('index')
+
+
+def show_test_page(request):
+    questions = list(Question.objects.all())
+    test = []
+
+    if len(questions) < 10:
+        test = questions
+        random.shuffle(test)
+    else:
+        test = random.sample(questions, 10)
+
+    context = {
+        'test': test,
+
+    }
+    if request.method == 'POST':
+        if 'like' in request.POST:
+            if request.user.is_authenticated:
+                question_id = request.POST.get('like')
+                question = get_object_or_404(Question, id=question_id)
+                like, created = Like.objects.get_or_create(user=request.user, question=question)
+
+                if not created:
+                    question.likes_count -= 1
+                    like.delete()
+
+                question.save()
+                return redirect('test')
+        right_answers = 0
+        wrong_answers = 0
+        for question in test:
+            if question.right_answer == request.POST.get(f"answers_{question.id}"):
+                right_answers += 1
+            else:
+                wrong_answers += 1
+
+        if request.user.is_authenticated:
+            user = User.objects.get(username=request.user)
+            user.Passed_Tests += 1
+            user.Correct_Answers += right_answers
+            user.Wrong_Answers += wrong_answers
+            if len(test) == 10:
+                if right_answers >= 7:
+                    user.Perfect_Tests += 1
+            else:
+                if right_answers >= len(test) // 2:
+                    user.Perfect_Tests += 1
+            user.save()
+        else:
+            test_results = {
+                'right_answers': right_answers,
+                'wrong_answers': wrong_answers,
+                'perfect_test': right_answers == len(test),
+            }
+            request.session['test_results'] = test_results
+            request.session.save()
+
+    return render(request, 'Character/test.html', context=context)

@@ -1,0 +1,9 @@
+{% extends 'Character/base.html' %}
+
+{% block title %} Index {% endblock %}
+{% block content %}
+<div style="margin-top: 140px;" class="border d-flex flex-column align-items-center border-primary rounded-3">
+    <h1 class="ms-3 me-3">Добро пожаловать</h1>
+    <p class="ms-3 me-3"><a class="btn btn-primary" href="{% url 'test' %}">Пройти тест</a></p>
+</div>
+{% endblock content %}

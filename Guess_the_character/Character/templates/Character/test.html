@@ -1,0 +1,28 @@
+{% extends 'Character/base.html' %}
+{% block title %} Test {% endblock %}
+{% load custom_filters %}
+{% block content %}
+<div style="margin-top: 140px;" class="border d-flex flex-column align-items-center border-primary rounded-3 text-center">
+    <h1 class="ms-3 me-3">Тест</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for question in test %}
+            <div class="ms-3 mt-3 me-3 border d-flex flex-column align-items-center border-primary rounded-3">
+                <img src="{{ question.image.url }}" class="ms-3 me-3" style="width: 300px; height: 300px;" alt="">
+                <p class="ms-3 me-3">{{ question.text }}</p>
+                <p class="ms-3 me-3">Варианты ответов:</p>
+                {% for answer in question|get_random_answers %}
+                    <div class="ms-3 me-3">
+                        <label for="answer_{{ question.id }}_{{ forloop.counter }}">{{ answer }}</label>
+                        <input type="radio" value="{{ answer }}" name="answers_{{ question.id }}" id="answer_{{ question.id }}_{{ forloop.counter }}">
+                    </div>
+                {% endfor %}
+                <input type="hidden" name="like" value="{{ question.id }}">
+                <input type="submit" value="Like {{ question.likes_count}}" class="btn btn-primary mt-2" style="width: 100px; height: 50px;">
+            </div>
+        {% endfor %}
+        <input class="btn btn-primary mt-2" value="Отправить" style="width: 200px; height: 50px;" type="submit">
+    </form>
+</div>
+{% endblock content %}
+

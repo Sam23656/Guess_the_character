@@ -1,0 +1,13 @@
+{% extends 'Character/base.html' %}
+
+{% block title %} Change profile {% endblock %}
+{% block content %}
+<div style="margin-top: 140px;" class="border d-flex flex-column  align-items-center border-primary rounded-3">
+    <form action="" class="d-flex flex-column justify-content-center align-content-center mt-2" method="post">
+        {% csrf_token %}
+        <div class="ms-3 me-3 ">{{ form.as_p }}</div>
+        <input class="btn btn-primary align-self-center mb-1" style="width: 200px; height: 50px;" type="submit"
+               value="Обновить профиль">
+    </form>
+</div>
+{% endblock content %}

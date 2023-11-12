@@ -27,8 +27,22 @@ class Question(models.Model):
     wrong_answer_2 = models.CharField(max_length=256)
     wrong_answer_3 = models.CharField(max_length=256)
     wrong_answer_4 = models.CharField(max_length=256)
+    likes_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.right_answer
 
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.question.right_answer}"
+
+    def save(
+            self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self.question.likes_count += 1
+        self.question.save()
+        return super(Like, self).save(force_insert, force_update, using, update_fields)

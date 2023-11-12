@@ -1,0 +1,17 @@
+{% extends 'Character/base.html' %}
+
+{% block title %} Account {% endblock %}
+{% block content %}
+    <div style="margin-top: 140px;" class="border d-flex flex-column align-items-center border-primary rounded-3">
+        <h1 class="ms-3 me-3">Профиль</h1>
+        <p class="ms-3 me-3">Никнейм: {{request.user.username}}</p>
+        <p class="ms-3 me-3">Пройдено тестов: {{request.user.Passed_Tests}}</p>
+        <p class="ms-3 me-3">Правильных ответов: {{request.user.Correct_Answers}}</p>
+        <p class="ms-3 me-3">Неправильных ответов: {{request.user.Wrong_Answers}}</p>
+        <p class="ms-3 me-3">Идеальных тестов: {{request.user.Perfect_Tests}}</p>
+        <p class="ms-3 me-3">Процент правильных ответов: {{request.user.Successes_Rate}}</p>
+        <p class="ms-3 me-3"><a class="btn btn-primary" href="{% url 'change_profile' request.user.pk %}">Изменить профиль</a></p>
+        <p class="ms-3 me-3"><a class="btn btn-primary" href="{% url 'change_password' %}">Изменить пароль</a></p>
+        <p class="ms-3 me-3"><a class="btn btn-primary" href="{% url 'create_question' %}">Добавить вопрос</a></p>
+    </div>
+{% endblock content %}
