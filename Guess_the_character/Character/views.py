@@ -26,13 +26,12 @@ class LoginViewPage(LoginView):
     def form_valid(self, form):
         response = super().form_valid(form)
         user = self.request.user
-        if 'test_results' in self.request.session:
-            test_results = self.request.session['test_results']
+        if 'test_results' in cache:
+            test_results = cache.get('test_results')
             user.Passed_Tests += test_results.get('passed_tests', 0)
             user.Correct_Answers += test_results.get('correct_answers', 0)
             user.Wrong_Answers += test_results.get('wrong_answers', 0)
-            del self.request.session['test_results']
-            self.request.session.save()
+            cache.delete('test_results')
         user.save()
 
         return response
@@ -159,8 +158,7 @@ class TestPageView(TestMixin, TemplateView):
                 'wrong_answers': wrong_answers,
                 'perfect_test': right_answers == len(test),
             }
-            request.session['test_results'] = test_results
-            request.session.save()
+            cache.set(f'test_results', test_results)
         print(test)
         next_question_url = reverse('test') + f'?question_id={",".join(str(elem.id) for elem in test)}'
         return redirect(next_question_url)

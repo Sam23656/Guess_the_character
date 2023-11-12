@@ -1,8 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, make_password
 
 
 # Create your models here.
+
 
 class User(AbstractUser):
     Passed_Tests = models.PositiveIntegerField(default=0)
@@ -12,12 +13,15 @@ class User(AbstractUser):
     Successes_Rate = models.FloatField(default=0)
 
     def save(self, *args, **kwargs):
-        super(User, self).save(*args, **kwargs)
+        if not self.id:  # Check if the user is being created (not updating)
+            self.set_password(self.password)
+
         try:
             self.Successes_Rate = self.Correct_Answers / (self.Correct_Answers + self.Wrong_Answers)
         except ZeroDivisionError:
             self.Successes_Rate = 0
-        return super(User, self).save(*args, **kwargs)
+
+        super(User, self).save(*args, **kwargs)
 
 
 class Question(models.Model):
