@@ -28,6 +28,7 @@ class Question(models.Model):
     wrong_answer_3 = models.CharField(max_length=256)
     wrong_answer_4 = models.CharField(max_length=256)
     likes_count = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.right_answer
@@ -46,3 +47,14 @@ class Like(models.Model):
         self.question.likes_count += 1
         self.question.save()
         return super(Like, self).save(force_insert, force_update, using, update_fields)
+
+
+class Journal(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    questions = models.ManyToManyField(Question)
+    right_answers = models.PositiveIntegerField()
+    wrong_answers = models.PositiveIntegerField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.right_answers} - {self.wrong_answers}"

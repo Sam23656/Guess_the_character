@@ -4,7 +4,7 @@
 {% block content %}
 <div style="margin-top: 140px;" class="border d-flex flex-column align-items-center border-primary rounded-3 text-center">
     <h1 class="ms-3 me-3">Тест</h1>
-    <form method="post">
+    <form method="post" id="test-form">
         {% csrf_token %}
         {% for question in test %}
             <div class="ms-3 mt-3 me-3 border d-flex flex-column align-items-center border-primary rounded-3">
@@ -18,11 +18,13 @@
                     </div>
                 {% endfor %}
                 <input type="hidden" name="like" value="{{ question.id }}">
-                <input type="submit" value="Like {{ question.likes_count}}" class="btn btn-primary mt-2" style="width: 100px; height: 50px;">
+                <input type="submit" value="Like {{ question.likes_count }}" class="btn btn-primary mt-2" style="width: 100px; height: 50px;">
             </div>
         {% endfor %}
+
         <input class="btn btn-primary mt-2" value="Отправить" style="width: 200px; height: 50px;" type="submit">
     </form>
 </div>
+
 {% endblock content %}
 

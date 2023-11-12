@@ -1,12 +1,15 @@
 import random
 from django.contrib.auth.views import LoginView, PasswordChangeView
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.views.generic import CreateView, DetailView, UpdateView, TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout
 from Character.forms import CustomAuthenticationForm, RegisterForm, PasswordChangeForm, ChangeProfileForm, \
     CreateQuestionForm
+from Character.mixins import TestMixin
 from Character.models import User, Question, Like
+from django.core.cache import cache
+from django.urls import reverse
 
 
 # Create your views here.
@@ -75,35 +78,52 @@ class CreateQuestionView(CreateView):
     success_url = reverse_lazy('index')
 
 
-def show_test_page(request):
-    questions = list(Question.objects.all())
-    test = []
+test = []
 
-    if len(questions) < 10:
-        test = questions
-        random.shuffle(test)
-    else:
-        test = random.sample(questions, 10)
 
-    context = {
-        'test': test,
+class TestPageView(TestMixin, TemplateView):
+    template_name = 'Character/test.html'
 
-    }
-    if request.method == 'POST':
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        questions = list(Question.objects.all())
+        global test
+
+        if len(questions) < 10:
+            test = questions
+            random.shuffle(test)
+        else:
+            test = random.sample(questions, 10)
+
+        context['test'] = test
+
+        return context
+
+    def post(self, request, *args, **kwargs):
         if 'like' in request.POST:
-            if request.user.is_authenticated:
-                question_id = request.POST.get('like')
-                question = get_object_or_404(Question, id=question_id)
-                like, created = Like.objects.get_or_create(user=request.user, question=question)
+            self.process_like(request)
 
-                if not created:
-                    question.likes_count -= 1
-                    like.delete()
+        return self.process_answers(request)
 
-                question.save()
-                return redirect('test')
+    def process_like(self, request):
+        if request.user.is_authenticated:
+            question_id = request.POST.get('like')
+            question = get_object_or_404(Question, id=question_id)
+            like, created = Like.objects.get_or_create(user=request.user, question=question)
+
+            if not created:
+                question.likes_count -= 1
+                like.delete()
+
+            question.save()
+
+    def process_answers(self, request):
         right_answers = 0
         wrong_answers = 0
+        perfect_test = False
+
+        global test
+        print(test)
         for question in test:
             if question.right_answer == request.POST.get(f"answers_{question.id}"):
                 right_answers += 1
@@ -115,13 +135,24 @@ def show_test_page(request):
             user.Passed_Tests += 1
             user.Correct_Answers += right_answers
             user.Wrong_Answers += wrong_answers
+
             if len(test) == 10:
                 if right_answers >= 7:
                     user.Perfect_Tests += 1
+                    perfect_test = True
             else:
                 if right_answers >= len(test) // 2:
                     user.Perfect_Tests += 1
+                    perfect_test = True
+
+            test_results = {
+                'right_answers': right_answers,
+                'wrong_answers': wrong_answers,
+                'perfect_test': perfect_test,
+            }
+            cache.set(f'test_results_{user.username}', test_results)
             user.save()
+
         else:
             test_results = {
                 'right_answers': right_answers,
@@ -130,5 +161,6 @@ def show_test_page(request):
             }
             request.session['test_results'] = test_results
             request.session.save()
-
-    return render(request, 'Character/test.html', context=context)
+        print(test)
+        next_question_url = reverse('test') + f'?question_id={",".join(str(elem.id) for elem in test)}'
+        return redirect(next_question_url)

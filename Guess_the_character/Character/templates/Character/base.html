@@ -21,6 +21,20 @@
                 </ul>
                 <ul class="navbar-nav mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
+                {% if test_statistics %}
+                <li class="nav-item me-5">
+                  <p class="navbar-text">Пройденно тестов: {{test_statistics.passed_tests}}</p>
+               </li>
+               <li class="nav-item me-5">
+                <p class="navbar-text">Правельных ответов: {{test_statistics.passed_tests}}</p>
+             </li>
+             <li class="nav-item me-5">
+              <p class="navbar-text">Неправельных ответов: {{test_statistics.wrong_answers}}</p>
+           </li>
+           <li class="nav-item me-5">
+            <p class="navbar-text">Идеальных тестов: {{test_statistics.perfect_tests}}</p>
+         </li>
+         {% endif %}
                 <li class="nav-item">
                    <p class="navbar-text">Пользователь {{request.user}}</p>
                 </li>
